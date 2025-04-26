@@ -8,7 +8,7 @@
     table.dataTable thead th {
       text-align: center;
     }
-    .live-logo {
+    .live-logo, .live-checkbox-label {
       width: 48px;
       height: 48px;
       object-fit: contain;
@@ -18,31 +18,33 @@
     .live-logo:not(.active) {
       opacity: 0.3;
     }
-    td備考 {
+    .dt-left {
       text-align: left;
+    }
+    .toggle-container {
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
 
+<div class="toggle-container">
+  <label>
+    <input type="checkbox" id="toggleView" checked>
+    縮小表示オン/オフ
+  </label>
+</div>
+
 <table id="gearTable" class="display" style="width:100%">
   <thead>
-    <tr>
+    <tr id="headerRow">
       <th>ジャンル</th>
       <th>メーカー</th>
       <th>機材名</th>
-      <th>
-        <img src="logos/RRTT.svg" class="live-logo live-filter active" data-live="RHYTHM RED TMN TOUR">
-      </th>
-      <th>
-        <img src="logos/TTE.svg" class="live-logo live-filter active" data-live="TOUR TMN EXPO">
-      </th>
-      <th>
-        <img src="logos/C4U.svg" class="live-logo live-filter active" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU">
-      </th>
-      <th>
-        <img src="logos/LG.svg" class="live-logo live-filter active" data-live="TMN 4001 DAYS GROOVE">
-      </th>
+      <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
+      <th class="live-header" data-live="TOUR TMN EXPO"></th>
+      <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
+      <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
       <th>備考</th>
     </tr>
   </thead>
@@ -52,6 +54,13 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function() {
+  const liveInfos = [
+    { name: "RHYTHM RED TMN TOUR", short: "RRTT.svg" },
+    { name: "TOUR TMN EXPO", short: "TTE.svg" },
+    { name: "TOUR TMN EXPO FINAL CRAZY 4 YOU", short: "C4U.svg" },
+    { name: "TMN 4001 DAYS GROOVE", short: "LG.svg" }
+  ];
+
   const liveColumnIndexMap = {
     "RHYTHM RED TMN TOUR": 3,
     "TOUR TMN EXPO": 4,
@@ -95,15 +104,44 @@ $(document).ready(function() {
     order: []
   });
 
-  $('.live-logo').on('click', function() {
+  function updateHeader(viewModeIcon) {
+    $('.live-header').each(function(index) {
+      const info = liveInfos[index];
+      if (viewModeIcon) {
+        $(this).html(`<img src="logos/${info.short}" class="live-logo live-filter active" data-live="${info.name}">`);
+      } else {
+        $(this).html(`<label><input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" checked> ${info.name}</label>`);
+      }
+    });
+  }
+
+  updateHeader(true);
+
+  $(document).on('click', '.live-logo', function() {
     $(this).toggleClass('active');
     table.draw();
   });
 
+  $(document).on('change', '.live-checkbox', function() {
+    table.draw();
+  });
+
+  $('#toggleView').on('change', function() {
+    const isIconView = $(this).is(':checked');
+    updateHeader(isIconView);
+  });
+
   $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-    const activeLives = $('.live-logo.active').map(function() {
-      return $(this).data('live');
-    }).get();
+    let activeLives = [];
+    if ($('#toggleView').is(':checked')) {
+      activeLives = $('.live-logo.active').map(function() {
+        return $(this).data('live');
+      }).get();
+    } else {
+      activeLives = $('.live-checkbox:checked').map(function() {
+        return $(this).data('live');
+      }).get();
+    }
 
     if (activeLives.length === 0) return true;
 
