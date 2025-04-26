@@ -5,8 +5,19 @@
   <title>TMN Live Gear</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
+    body {
+      padding: 20px; /* 画面左右に余白 */
+    }
+    .table-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
     table.dataTable thead th {
       text-align: center;
+      white-space: nowrap; /* 長い文字列でも折り返さない */
+    }
+    table.dataTable td {
+      white-space: nowrap;
     }
     .live-logo, .live-checkbox-label {
       width: 48px;
@@ -35,20 +46,22 @@
   </label>
 </div>
 
-<table id="gearTable" class="display" style="width:100%">
-  <thead>
-    <tr id="headerRow">
-      <th>ジャンル</th>
-      <th>メーカー</th>
-      <th>機材名</th>
-      <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
-      <th class="live-header" data-live="TOUR TMN EXPO"></th>
-      <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
-      <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
-      <th>備考</th>
-    </tr>
-  </thead>
-</table>
+<div class="table-wrapper">
+  <table id="gearTable" class="display" style="width:100%">
+    <thead>
+      <tr id="headerRow">
+        <th>ジャンル</th>
+        <th>メーカー</th>
+        <th>機材名</th>
+        <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
+        <th class="live-header" data-live="TOUR TMN EXPO"></th>
+        <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
+        <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
+        <th>備考</th>
+      </tr>
+    </thead>
+  </table>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -107,18 +120,19 @@ $(document).ready(function() {
     const table = $('#gearTable').DataTable({
       paging: false,
       info: false,
+      autoWidth: true,
       data: dataSet,
       columns: [
         { data: 'ジャンル' },
         { data: 'メーカー' },
         { data: '機材名' },
-        { data: 'RHYTHM', className: 'dt-center' },
-        { data: 'EXPO', className: 'dt-center' },
-        { data: 'CRAZY', className: 'dt-center' },
-        { data: 'GROOVE', className: 'dt-center' },
+        { data: 'RHYTHM', className: 'dt-center', orderable: false },
+        { data: 'EXPO', className: 'dt-center', orderable: false },
+        { data: 'CRAZY', className: 'dt-center', orderable: false },
+        { data: 'GROOVE', className: 'dt-center', orderable: false },
         { data: '備考', className: 'dt-left' }
       ],
-      order: []
+      order: [] // デフォルトソートなし
     });
 
     updateHeader(true);
