@@ -24,17 +24,17 @@
 
   <table id="gearTable" class="display">
     <thead>
-      <tr>
-        <th>ジャンル</th>
-        <th>機材名</th>
-        <th>メーカー</th>
-        <th><label class="checkbox-label">RHYTHM RED<input type="checkbox" class="live-filter" value="RHYTHM RED TMN TOUR"></label></th>
-        <th><label class="checkbox-label">EXPO<input type="checkbox" class="live-filter" value="TOUR TMN EXPO"></label></th>
-        <th><label class="checkbox-label">EXPO FINAL<input type="checkbox" class="live-filter" value="TOUR TMN EXPO FINAL CRAZY 4 YOU"></label></th>
-        <th><label class="checkbox-label">4001 DAYS<input type="checkbox" class="live-filter" value="TMN 4001 DAYS GROOVE"></label></th>
-        <th>備考</th>
-      </tr>
-    </thead>
+    <tr>
+      <th>ジャンル</th>
+      <th>メーカー</th>
+      <th>機材名</th>
+      <th><label class="checkbox-label">RHYTHM RED<input type="checkbox" class="live-filter" value="RHYTHM RED TMN TOUR"></label></th>
+      <th><label class="checkbox-label">EXPO<input type="checkbox" class="live-filter" value="TOUR TMN EXPO"></label></th>
+      <th><label class="checkbox-label">EXPO FINAL<input type="checkbox" class="live-filter" value="TOUR TMN EXPO FINAL CRAZY 4 YOU"></label></th>
+      <th><label class="checkbox-label">4001 DAYS<input type="checkbox" class="live-filter" value="TMN 4001 DAYS GROOVE"></label></th>
+      <th>備考</th>
+    </tr>
+  </thead>
     <tbody></tbody>
   </table>
 
@@ -60,8 +60,8 @@
           data.forEach(row => {
             const tr = $('<tr></tr>');
             tr.append(`<td>${row["ジャンル"]}</td>`);
-            tr.append(`<td>${row["機材名"]}</td>`);
             tr.append(`<td>${row["メーカー"]}</td>`);
+            tr.append(`<td>${row["機材名"]}</td>`);
             tr.append(`<td>${row["RHYTHM RED TMN TOUR"] === "✓" ? "✓" : ""}</td>`);
             tr.append(`<td>${row["TOUR TMN EXPO"] === "✓" ? "✓" : ""}</td>`);
             tr.append(`<td>${row["TOUR TMN EXPO FINAL CRAZY 4 YOU"] === "✓" ? "✓" : ""}</td>`);
