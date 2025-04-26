@@ -2,119 +2,118 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>TMN 使用機材一覧</title>
+  <title>TMN Live Gear</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    table td, table th { text-align: center; }
-    table td:last-child { text-align: left; }
-    .checkbox-label {
-      white-space: nowrap;
-      font-weight: normal;
-      font-size: 0.9em;
+    table.dataTable thead th {
+      text-align: center;
     }
-    .checkbox-label input {
-      margin-left: 4px;
+    .live-logo {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    .live-logo:not(.active) {
+      opacity: 0.3;
+    }
+    td備考 {
+      text-align: left;
     }
   </style>
 </head>
 <body>
 
-  <h2>TMN ライブ別使用機材リスト</h2>
+<table id="gearTable" class="display" style="width:100%">
+  <thead>
+    <tr>
+      <th>ジャンル</th>
+      <th>メーカー</th>
+      <th>機材名</th>
+      <th>
+        <img src="logos/RRTT.svg" class="live-logo live-filter active" data-live="RHYTHM RED TMN TOUR">
+      </th>
+      <th>
+        <img src="logos/TTE.svg" class="live-logo live-filter active" data-live="TOUR TMN EXPO">
+      </th>
+      <th>
+        <img src="logos/C4U.svg" class="live-logo live-filter active" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU">
+      </th>
+      <th>
+        <img src="logos/LG.svg" class="live-logo live-filter active" data-live="TMN 4001 DAYS GROOVE">
+      </th>
+      <th>備考</th>
+    </tr>
+  </thead>
+</table>
 
-  <table id="gearTable" class="display">
-    <thead>
-      <tr>
-        <th>ジャンル</th>
-        <th>メーカー</th>
-        <th>機材名</th>
-        <th>
-          <label class="checkbox-label">RHYTHM RED TMN TOUR
-            <input type="checkbox" class="live-filter" value="RHYTHM RED TMN TOUR">
-          </label>
-        </th>
-        <th>
-          <label class="checkbox-label">TOUR TMN EXPO
-            <input type="checkbox" class="live-filter" value="TOUR TMN EXPO">
-          </label>
-        </th>
-        <th>
-          <label class="checkbox-label">TOUR TMN EXPO FINAL CRAZY 4 YOU
-            <input type="checkbox" class="live-filter" value="TOUR TMN EXPO FINAL CRAZY 4 YOU">
-          </label>
-        </th>
-        <th>
-          <label class="checkbox-label">TMN 4001 DAYS GROOVE
-            <input type="checkbox" class="live-filter" value="TMN 4001 DAYS GROOVE">
-          </label>
-        </th>
-        <th>備考</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+  const liveColumnIndexMap = {
+    "RHYTHM RED TMN TOUR": 3,
+    "TOUR TMN EXPO": 4,
+    "TOUR TMN EXPO FINAL CRAZY 4 YOU": 5,
+    "TMN 4001 DAYS GROOVE": 6
+  };
 
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <script>
-    $(document).ready(function () {
-      const table = $('#gearTable').DataTable({
-        paging: false,
-        info: false,
-        columnDefs: [
-          { orderable: true, targets: [0, 1, 2] },
-          { orderable: false, targets: '_all' }
-        ]
-      });
-
-      function loadCSV() {
-        Papa.parse('TMN_GROOVE_GEAR.csv', {
-          download: true,
-          header: true,
-          complete: function(results) {
-            results.data.forEach(function(row) {
-              if (!row['ジャンル']) return; // 空行ガード
-
-              table.row.add([
-                row['ジャンル'],
-                row['メーカー'],
-                row['機材名'],
-                row['RHYTHM RED TMN TOUR'] === '✓' ? '✓' : '',
-                row['TOUR TMN EXPO'] === '✓' ? '✓' : '',
-                row['TOUR TMN EXPO FINAL CRAZY 4 YOU'] === '✓' ? '✓' : '',
-                row['TMN 4001 DAYS GROOVE'] === '✓' ? '✓' : '',
-                row['備考'] || ''
-              ]).draw(false);
-            });
-          }
+  const table = $('#gearTable').DataTable({
+    paging: false,
+    info: false,
+    ajax: {
+      url: 'TMN_GROOVE_GEAR.csv',
+      dataSrc: function(csv) {
+        const lines = csv.split('\n').filter(line => line.trim() !== '');
+        const headers = lines[0].split(',');
+        return lines.slice(1).map(line => {
+          const cols = line.split(',');
+          return {
+            ジャンル: cols[0],
+            メーカー: cols[1],
+            機材名: cols[2],
+            RHYTHM: cols[3],
+            EXPO: cols[4],
+            CRAZY: cols[5],
+            GROOVE: cols[6],
+            備考: cols[7]
+          };
         });
       }
+    },
+    columns: [
+      { data: 'ジャンル' },
+      { data: 'メーカー' },
+      { data: '機材名' },
+      { data: 'RHYTHM', className: 'dt-center' },
+      { data: 'EXPO', className: 'dt-center' },
+      { data: 'CRAZY', className: 'dt-center' },
+      { data: 'GROOVE', className: 'dt-center' },
+      { data: '備考', className: 'dt-left' }
+    ],
+    order: []
+  });
 
-      loadCSV();
+  $('.live-logo').on('click', function() {
+    $(this).toggleClass('active');
+    table.draw();
+  });
 
-      $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        const selectedLives = $('.live-filter:checked').map(function () {
-          return $(this).val();
-        }).get();
+  $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+    const activeLives = $('.live-logo.active').map(function() {
+      return $(this).data('live');
+    }).get();
 
-        if (selectedLives.length === 0) return true;
+    if (activeLives.length === 0) return true;
 
-        return selectedLives.every(live => {
-          const colIndex = $('#gearTable thead th').filter(function () {
-            return $(this).text().trim().startsWith(live);
-          }).index();
-
-          return colIndex > -1 && data[colIndex] === '✓';
-        });
-      });
-
-      $('.live-filter').on('change', function () {
-        table.draw();
-      });
+    return activeLives.every(live => {
+      const colIndex = liveColumnIndexMap[live];
+      return data[colIndex] === '✓';
     });
-  </script>
+  });
+});
+</script>
+
 </body>
 </html>
