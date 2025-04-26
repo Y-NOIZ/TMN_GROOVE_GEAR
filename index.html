@@ -2,49 +2,41 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>TMN Live Gear</title>
+  <title>TMN GROOVE GEAR</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
-    table.dataTable thead th {
-      text-align: center;
-    }
-    .live-logo, .live-checkbox-label {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
-    .live-logo:not(.active) {
-      opacity: 0.3;
-    }
-    .dt-left {
-      text-align: left;
-    }
-    .toggle-container {
-      margin-bottom: 10px;
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    #filterContainer { margin-bottom: 20px; }
+    .logo { width: 40px; height: 40px; opacity: 0.4; cursor: pointer; transition: opacity 0.3s; }
+    .logo.active { opacity: 1; }
+    th.logo-header { pointer-events: none; }
+    .small-icons th { font-size: 0; }
+    .small-icons th img { width: 30px; height: 30px; }
   </style>
 </head>
 <body>
 
-<div class="toggle-container">
-  <label>
-    <input type="checkbox" id="toggleView" checked>
-    縮小表示オン/オフ
-  </label>
+<h1>TMN GROOVE GEAR</h1>
+<div>
+  <label><input type="checkbox" id="toggleView"> 縮小表示をオン</label>
+</div>
+<div id="filterContainer">
+  <img src="RRTT.svg" id="filter-rrtt" class="logo" title="RHYTHM RED TMN TOUR">
+  <img src="TTE.svg" id="filter-tte" class="logo" title="TOUR TMN EXPO">
+  <img src="C4U.svg" id="filter-c4u" class="logo" title="TOUR TMN EXPO FINAL CRAZY 4 YOU">
+  <img src="LG.svg" id="filter-lg" class="logo" title="TMN 4001 DAYS GROOVE">
 </div>
 
 <table id="gearTable" class="display" style="width:100%">
   <thead>
-    <tr id="headerRow">
+    <tr>
       <th>ジャンル</th>
       <th>メーカー</th>
       <th>機材名</th>
-      <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
-      <th class="live-header" data-live="TOUR TMN EXPO"></th>
-      <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
-      <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
+      <th class="logo-header">RHYTHM RED TMN TOUR</th>
+      <th class="logo-header">TOUR TMN EXPO</th>
+      <th class="logo-header">TOUR TMN EXPO FINAL CRAZY 4 YOU</th>
+      <th class="logo-header">TMN 4001 DAYS GROOVE</th>
       <th>備考</th>
     </tr>
   </thead>
@@ -54,111 +46,93 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function() {
-  const liveInfos = [
-    { name: "RHYTHM RED TMN TOUR", short: "RRTT.png" },
-    { name: "TOUR TMN EXPO", short: "TTE.png" },
-    { name: "TOUR TMN EXPO FINAL CRAZY 4 YOU", short: "C4U.png" },
-    { name: "TMN 4001 DAYS GROOVE", short: "LG.png" }
-  ];
+  let activeFilters = [];
 
-  const liveColumnIndexMap = {
-    "RHYTHM RED TMN TOUR": 3,
-    "TOUR TMN EXPO": 4,
-    "TOUR TMN EXPO FINAL CRAZY 4 YOU": 5,
-    "TMN 4001 DAYS GROOVE": 6
-  };
-
-  function fetchCSVData(url, callback) {
-    $.ajax({
-      url: url,
-      dataType: 'text'
-    }).done(function(csv) {
-      const lines = csv.split('\n').filter(line => line.trim() !== '');
-      const headers = lines[0].split(',');
-      const data = lines.slice(1).map(line => {
-        const cols = line.split(',');
-        return {
-          ジャンル: cols[0],
-          メーカー: cols[1],
-          機材名: cols[2],
-          RHYTHM: cols[3],
-          EXPO: cols[4],
-          CRAZY: cols[5],
-          GROOVE: cols[6],
-          備考: cols[7]
-        };
+  const table = $('#gearTable').DataTable({
+    ajax: "TMN_GROOVE_GEAR.csv",
+    columns: [
+      { data: "ジャンル" },
+      { data: "メーカー" },
+      { data: "機材名" },
+      { data: "RHYTHM RED TMN TOUR", orderable: false },
+      { data: "TOUR TMN EXPO", orderable: false },
+      { data: "TOUR TMN EXPO FINAL CRAZY 4 YOU", orderable: false },
+      { data: "TMN 4001 DAYS GROOVE", orderable: false },
+      { data: "備考" }
+    ],
+    paging: false,
+    info: false,
+    ordering: true,
+    order: [],
+    dom: 't',
+    language: {
+      emptyTable: "データがありません"
+    },
+    initComplete: function() {
+      // フィルター初期化
+      filterTable();
+    },
+    processing: true,
+    serverSide: false,
+    deferRender: true,
+    columnDefs: [
+      { targets: [3,4,5,6], className: 'dt-center' },
+      { targets: 7, className: 'dt-left' }
+    ],
+    dataSrc: function (csv) {
+      const lines = csv.split("\n");
+      const headers = lines[0].split(",");
+      return lines.slice(1).filter(line => line.trim() !== "").map(line => {
+        const values = line.split(",");
+        let obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = values[i] || "";
+        });
+        return obj;
       });
-      callback(data);
-    });
+    }
+  });
+
+  function filterTable() {
+    $.fn.dataTable.ext.search = [];
+    if (activeFilters.length > 0) {
+      $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        for (let i = 0; i < activeFilters.length; i++) {
+          if (data[activeFilters[i]] !== '✓') {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+    table.draw();
   }
 
-  function updateHeader(viewModeIcon) {
-    $('.live-header').each(function(index) {
-      const info = liveInfos[index];
-      if (viewModeIcon) {
-        $(this).html(`<img src="logos/${info.short}" class="live-logo live-filter active" data-live="${info.name}">`);
-      } else {
-        $(this).html(`<label><input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" checked> ${info.name}</label>`);
-      }
-    });
+  function toggleFilter(id, columnIndex) {
+    const idx = activeFilters.indexOf(columnIndex);
+    if (idx > -1) {
+      activeFilters.splice(idx, 1);
+      $(`#filter-${id}`).removeClass('active');
+    } else {
+      activeFilters.push(columnIndex);
+      $(`#filter-${id}`).addClass('active');
+    }
+    filterTable();
   }
 
-  fetchCSVData('TMN_GROOVE_GEAR.csv', function(dataSet) {
-    const table = $('#gearTable').DataTable({
-      paging: false,
-      info: false,
-      data: dataSet,
-      columns: [
-        { data: 'ジャンル' },
-        { data: 'メーカー' },
-        { data: '機材名' },
-        { data: 'RHYTHM', className: 'dt-center' },
-        { data: 'EXPO', className: 'dt-center' },
-        { data: 'CRAZY', className: 'dt-center' },
-        { data: 'GROOVE', className: 'dt-center' },
-        { data: '備考', className: 'dt-left' }
-      ],
-      order: []
-    });
+  $('#filter-rrtt').click(function() { toggleFilter('rrtt', 3); });
+  $('#filter-tte').click(function() { toggleFilter('tte', 4); });
+  $('#filter-c4u').click(function() { toggleFilter('c4u', 5); });
+  $('#filter-lg').click(function() { toggleFilter('lg', 6); });
 
-    updateHeader(true);
-
-    $(document).on('click', '.live-logo', function() {
-      $(this).toggleClass('active');
-      table.draw();
-    });
-
-    $(document).on('change', '.live-checkbox', function() {
-      table.draw();
-    });
-
-    $('#toggleView').on('change', function() {
-      const isIconView = $(this).is(':checked');
-      updateHeader(isIconView);
-    });
-
-    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-      let activeLives = [];
-      if ($('#toggleView').is(':checked')) {
-        activeLives = $('.live-logo.active').map(function() {
-          return $(this).data('live');
-        }).get();
-      } else {
-        activeLives = $('.live-checkbox:checked').map(function() {
-          return $(this).data('live');
-        }).get();
-      }
-
-      if (activeLives.length === 0) return true;
-
-      return activeLives.every(live => {
-        const colIndex = liveColumnIndexMap[live];
-        return data[colIndex] === '✓';
-      });
-    });
+  $('#toggleView').change(function() {
+    if ($(this).is(':checked')) {
+      $('#gearTable').addClass('small-icons');
+    } else {
+      $('#gearTable').removeClass('small-icons');
+    }
   });
 });
 </script>
-
 </body>
 </html>
