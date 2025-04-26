@@ -2,84 +2,115 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>TMN 使用機材表</title>
+  <title>TMN 使用機材一覧</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
-    body { font-family: sans-serif; padding: 1em; background: #fff; color: #000; }
-    table { border-collapse: collapse; width: 100%; margin-top: 1em; }
-    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
-    th.sortable { cursor: pointer; }
-    th.sortable::after { content: " \25B4\25BE"; font-size: 0.8em; }
-    input[type="checkbox"] { margin-right: 0.5em; }
+    body { font-family: sans-serif; margin: 2em; }
+    table td, table th { text-align: center; }
+    table td:last-child { text-align: left; }
+    .checkbox-label {
+      white-space: nowrap;
+      font-weight: normal;
+      font-size: 0.9em;
+    }
+    .checkbox-label input {
+      margin-left: 4px;
+    }
   </style>
 </head>
 <body>
-  <h1>TMN 使用機材表</h1>
 
-  <div>
-    <label><input type="checkbox" class="filter" data-col="3">RHYTHM RED TMN TOUR</label>
-    <label><input type="checkbox" class="filter" data-col="4">TOUR TMN EXPO</label>
-    <label><input type="checkbox" class="filter" data-col="5">TOUR TMN EXPO FINAL CRAZY 4 YOU</label>
-    <label><input type="checkbox" class="filter" data-col="6">TMN 4001 DAYS GROOVE</label>
-  </div>
+<h2>TMN ライブ別使用機材リスト</h2>
 
-  <table id="gearTable">
-    <thead>
-      <tr>
-        <th class="sortable">ジャンル</th>
-        <th class="sortable">メーカー</th>
-        <th class="sortable">機材名</th>
-        <th>RHYTHM RED TMN TOUR</th>
-        <th>TOUR TMN EXPO</th>
-        <th>TOUR TMN EXPO FINAL CRAZY 4 YOU</th>
-        <th>TMN 4001 DAYS GROOVE</th>
-        <th>備考</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>シンセサイザー・キーボード・音源</td><td>ARP</td><td>solina String-Ensemble</td><td></td><td>✓</td><td>✓</td><td></td><td></td></tr>
-      <tr><td>シンセサイザー・キーボード・音源</td><td>E-mu</td><td>MORPHEUS</td><td></td><td></td><td></td><td>✓</td><td></td></tr>
-      <tr><td>シンセサイザー・キーボード・音源</td><td>E-mu</td><td>PROTEUS/1</td><td></td><td></td><td></td><td>✓</td><td></td></tr>
-      <tr><td>シンセサイザー・キーボード・音源</td><td>E-mu</td><td>PROTEUS/2</td><td></td><td></td><td></td><td>✓</td><td></td></tr>
-    </tbody>
-  </table>
+<table id="gearTable" class="display" style="width:100%">
+  <thead>
+    <tr>
+      <th>ジャンル</th>
+      <th>メーカー</th>
+      <th>機材名</th>
+      <th>
+        <label class="checkbox-label">RHYTHM RED TMN TOUR
+          <input type="checkbox" class="live-filter" value="RHYTHM RED TMN TOUR">
+        </label>
+      </th>
+      <th>
+        <label class="checkbox-label">TOUR TMN EXPO
+          <input type="checkbox" class="live-filter" value="TOUR TMN EXPO">
+        </label>
+      </th>
+      <th>
+        <label class="checkbox-label">TOUR TMN EXPO FINAL CRAZY 4 YOU
+          <input type="checkbox" class="live-filter" value="TOUR TMN EXPO FINAL CRAZY 4 YOU">
+        </label>
+      </th>
+      <th>
+        <label class="checkbox-label">TMN 4001 DAYS GROOVE
+          <input type="checkbox" class="live-filter" value="TMN 4001 DAYS GROOVE">
+        </label>
+      </th>
+      <th>備考</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <script>
-    const table = document.getElementById('gearTable');
-    const headers = table.querySelectorAll('th.sortable');
-    const checkboxes = document.querySelectorAll('.filter');
+<!-- ライブラリ読み込み -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-    headers.forEach((th, idx) => {
-      th.addEventListener('click', () => {
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-        const asc = th.dataset.asc !== 'true';
-        th.dataset.asc = asc;
+<script>
+  $(document).ready(function () {
+    const table = $('#gearTable').DataTable({
+      paging: false,
+      info: false,
+      columnDefs: [
+        { orderable: true, targets: [0, 1, 2] },
+        { orderable: false, targets: '_all' }
+      ]
+    });
 
-        rows.sort((a, b) => {
-          const aText = a.children[idx].textContent.trim();
-          const bText = b.children[idx].textContent.trim();
-          return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
-        });
+    // カスタムフィルター：AND条件
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+      const selectedLives = $('.live-filter:checked').map(function () {
+        return $(this).val();
+      }).get();
 
-        rows.forEach(row => tbody.appendChild(row));
+      if (selectedLives.length === 0) return true;
+
+      return selectedLives.every(live => {
+        const colIndex = $('#gearTable thead th').filter(function () {
+          return $(this).text().trim().startsWith(live);
+        }).index();
+        return data[colIndex] === '✓';
       });
     });
 
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        const activeFilters = Array.from(checkboxes)
-          .filter(cb => cb.checked)
-          .map(cb => parseInt(cb.dataset.col));
-
-        const rows = table.querySelectorAll('tbody tr');
-
-        rows.forEach(row => {
-          const cells = row.children;
-          const match = activeFilters.every(col => cells[col].textContent.trim() === '✓');
-          row.style.display = (match || activeFilters.length === 0) ? '' : 'none';
-        });
-      });
+    $('.live-filter').on('change', function () {
+      table.draw();
     });
-  </script>
+
+    // CSV読み込みと表示
+    Papa.parse('TMN_GROOVE_GEAR.csv', {
+      download: true,
+      header: true,
+      complete: function (results) {
+        results.data.forEach(row => {
+          table.row.add([
+            row['ジャンル'] || '',
+            row['メーカー'] || '',
+            row['機材名'] || '',
+            row['RHYTHM RED TMN TOUR'] || '',
+            row['TOUR TMN EXPO'] || '',
+            row['TOUR TMN EXPO FINAL CRAZY 4 YOU'] || '',
+            row['TMN 4001 DAYS GROOVE'] || '',
+            row['備考'] || ''
+          ]).draw(false);
+        });
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
