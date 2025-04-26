@@ -2,90 +2,83 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>TMN使用機材まとめ - ライブ別リスト</title>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <title>TMN 使用機材表</title>
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    table { text-align: center; }
-    table td:last-child { text-align: left; }
-    .checkbox-label {
-      white-space: nowrap;
-      font-size: 0.9em;
-      font-weight: normal;
-    }
-    .checkbox-label input {
-      margin-left: 4px;
-    }
+    body { font-family: sans-serif; padding: 1em; background: #fff; color: #000; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+    th.sortable { cursor: pointer; }
+    th.sortable::after { content: " \25B4\25BE"; font-size: 0.8em; }
+    input[type="checkbox"] { margin-right: 0.5em; }
   </style>
 </head>
 <body>
+  <h1>TMN 使用機材表</h1>
 
-  <h2>TMN ライブ別使用機材リスト</h2>
+  <div>
+    <label><input type="checkbox" class="filter" data-col="3">RHYTHM RED TMN TOUR</label>
+    <label><input type="checkbox" class="filter" data-col="4">TOUR TMN EXPO</label>
+    <label><input type="checkbox" class="filter" data-col="5">TOUR TMN EXPO FINAL CRAZY 4 YOU</label>
+    <label><input type="checkbox" class="filter" data-col="6">TMN 4001 DAYS GROOVE</label>
+  </div>
 
-  <table id="gearTable" class="display">
+  <table id="gearTable">
     <thead>
-    <tr>
-      <th>ジャンル</th>
-      <th>メーカー</th>
-      <th>機材名</th>
-      <th><label class="checkbox-label">RHYTHM RED<input type="checkbox" class="live-filter" value="RHYTHM RED TMN TOUR"></label></th>
-      <th><label class="checkbox-label">EXPO<input type="checkbox" class="live-filter" value="TOUR TMN EXPO"></label></th>
-      <th><label class="checkbox-label">EXPO FINAL<input type="checkbox" class="live-filter" value="TOUR TMN EXPO FINAL CRAZY 4 YOU"></label></th>
-      <th><label class="checkbox-label">4001 DAYS<input type="checkbox" class="live-filter" value="TMN 4001 DAYS GROOVE"></label></th>
-      <th>備考</th>
-    </tr>
-  </thead>
-    <tbody></tbody>
+      <tr>
+        <th class="sortable">ジャンル</th>
+        <th class="sortable">メーカー</th>
+        <th class="sortable">機材名</th>
+        <th>RHYTHM RED TMN TOUR</th>
+        <th>TOUR TMN EXPO</th>
+        <th>TOUR TMN EXPO FINAL CRAZY 4 YOU</th>
+        <th>TMN 4001 DAYS GROOVE</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>シンセサイザー・キーボード・音源</td><td>ARP</td><td>solina String-Ensemble</td><td></td><td>✓</td><td>✓</td><td></td><td></td></tr>
+      <tr><td>シンセサイザー・キーボード・音源</td><td>E-mu</td><td>MORPHEUS</td><td></td><td></td><td></td><td>✓</td><td></td></tr>
+      <tr><td>シンセサイザー・キーボード・音源</td><td>E-mu</td><td>PROTEUS/1</td><td></td><td></td><td></td><td>✓</td><td></td></tr>
+      <tr><td>シンセサイザー・キーボード・音源</td><td>E-mu</td><td>PROTEUS/2</td><td></td><td></td><td></td><td>✓</td><td></td></tr>
+    </tbody>
   </table>
 
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    $(function () {
-      const table = $('#gearTable').DataTable({
-        paging: false,
-        info: false,
-        order: [],
-        columnDefs: [
-          { orderable: true, targets: [0, 1, 2] },
-          { orderable: false, targets: '_all' }
-        ]
+    const table = document.getElementById('gearTable');
+    const headers = table.querySelectorAll('th.sortable');
+    const checkboxes = document.querySelectorAll('.filter');
+
+    headers.forEach((th, idx) => {
+      th.addEventListener('click', () => {
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const asc = th.dataset.asc !== 'true';
+        th.dataset.asc = asc;
+
+        rows.sort((a, b) => {
+          const aText = a.children[idx].textContent.trim();
+          const bText = b.children[idx].textContent.trim();
+          return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
       });
+    });
 
-      Papa.parse('TMN_GROOVE_GEAR.csv', {
-        download: true,
-        header: true,
-        complete: ({ data }) => {
-          data.forEach(row => {
-            const tr = $('<tr></tr>');
-            tr.append(`<td>${row["ジャンル"]}</td>`);
-            tr.append(`<td>${row["メーカー"]}</td>`);
-            tr.append(`<td>${row["機材名"]}</td>`);
-            tr.append(`<td>${row["RHYTHM RED TMN TOUR"] === "✓" ? "✓" : ""}</td>`);
-            tr.append(`<td>${row["TOUR TMN EXPO"] === "✓" ? "✓" : ""}</td>`);
-            tr.append(`<td>${row["TOUR TMN EXPO FINAL CRAZY 4 YOU"] === "✓" ? "✓" : ""}</td>`);
-            tr.append(`<td>${row["TMN 4001 DAYS GROOVE"] === "✓" ? "✓" : ""}</td>`);
-            tr.append(`<td>${row["備考"] || ""}</td>`);
-            $('#gearTable tbody').append(tr);
-          });
-          table.rows.add($('#gearTable tbody tr')).draw();
-        }
-      });
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const activeFilters = Array.from(checkboxes)
+          .filter(cb => cb.checked)
+          .map(cb => parseInt(cb.dataset.col));
 
-      $.fn.dataTable.ext.search.push((settings, data, dataIndex) => {
-        const selectedLives = $('.live-filter:checked').map(function () {
-          return $(this).val();
-        }).get();
-        if (!selectedLives.length) return true;
+        const rows = table.querySelectorAll('tbody tr');
 
-        return selectedLives.every(live => {
-          const colIndex = $('#gearTable thead th').filter((_, th) => $(th).text().includes(live.split(" ")[0])).index();
-          return colIndex > -1 && data[colIndex] === '✓';
+        rows.forEach(row => {
+          const cells = row.children;
+          const match = activeFilters.every(col => cells[col].textContent.trim() === '✓');
+          row.style.display = (match || activeFilters.length === 0) ? '' : 'none';
         });
       });
-
-      $('.live-filter').on('change', () => table.draw());
     });
   </script>
 </body>
