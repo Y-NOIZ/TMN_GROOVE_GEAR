@@ -55,10 +55,10 @@
 <script>
 $(document).ready(function() {
   const liveInfos = [
-    { name: "RHYTHM RED TMN TOUR", short: "RRTT.png" },
-    { name: "TOUR TMN EXPO", short: "TTE.png" },
-    { name: "TOUR TMN EXPO FINAL CRAZY 4 YOU", short: "C4U.png" },
-    { name: "TMN 4001 DAYS GROOVE", short: "LG.png" }
+    { name: "RHYTHM RED TMN TOUR", short: "RRTT.svg" },
+    { name: "TOUR TMN EXPO", short: "TTE.svg" },
+    { name: "TOUR TMN EXPO FINAL CRAZY 4 YOU", short: "C4U.svg" },
+    { name: "TMN 4001 DAYS GROOVE", short: "LG.svg" }
   ];
 
   const liveColumnIndexMap = {
@@ -68,41 +68,29 @@ $(document).ready(function() {
     "TMN 4001 DAYS GROOVE": 6
   };
 
-  const table = $('#gearTable').DataTable({
-    paging: false,
-    info: false,
-    ajax: {
-      url: 'TMN_GROOVE_GEAR.csv',
-      dataSrc: function(csv) {
-        const lines = csv.split('\n').filter(line => line.trim() !== '');
-        const headers = lines[0].split(',');
-        return lines.slice(1).map(line => {
-          const cols = line.split(',');
-          return {
-            ジャンル: cols[0],
-            メーカー: cols[1],
-            機材名: cols[2],
-            RHYTHM: cols[3],
-            EXPO: cols[4],
-            CRAZY: cols[5],
-            GROOVE: cols[6],
-            備考: cols[7]
-          };
-        });
-      }
-    },
-    columns: [
-      { data: 'ジャンル' },
-      { data: 'メーカー' },
-      { data: '機材名' },
-      { data: 'RHYTHM', className: 'dt-center' },
-      { data: 'EXPO', className: 'dt-center' },
-      { data: 'CRAZY', className: 'dt-center' },
-      { data: 'GROOVE', className: 'dt-center' },
-      { data: '備考', className: 'dt-left' }
-    ],
-    order: []
-  });
+  function fetchCSVData(url, callback) {
+    $.ajax({
+      url: url,
+      dataType: 'text'
+    }).done(function(csv) {
+      const lines = csv.split('\n').filter(line => line.trim() !== '');
+      const headers = lines[0].split(',');
+      const data = lines.slice(1).map(line => {
+        const cols = line.split(',');
+        return {
+          ジャンル: cols[0],
+          メーカー: cols[1],
+          機材名: cols[2],
+          RHYTHM: cols[3],
+          EXPO: cols[4],
+          CRAZY: cols[5],
+          GROOVE: cols[6],
+          備考: cols[7]
+        };
+      });
+      callback(data);
+    });
+  }
 
   function updateHeader(viewModeIcon) {
     $('.live-header').each(function(index) {
@@ -115,39 +103,58 @@ $(document).ready(function() {
     });
   }
 
-  updateHeader(true);
+  fetchCSVData('TMN_GROOVE_GEAR.csv', function(dataSet) {
+    const table = $('#gearTable').DataTable({
+      paging: false,
+      info: false,
+      data: dataSet,
+      columns: [
+        { data: 'ジャンル' },
+        { data: 'メーカー' },
+        { data: '機材名' },
+        { data: 'RHYTHM', className: 'dt-center' },
+        { data: 'EXPO', className: 'dt-center' },
+        { data: 'CRAZY', className: 'dt-center' },
+        { data: 'GROOVE', className: 'dt-center' },
+        { data: '備考', className: 'dt-left' }
+      ],
+      order: []
+    });
 
-  $(document).on('click', '.live-logo', function() {
-    $(this).toggleClass('active');
-    table.draw();
-  });
+    updateHeader(true);
 
-  $(document).on('change', '.live-checkbox', function() {
-    table.draw();
-  });
+    $(document).on('click', '.live-logo', function() {
+      $(this).toggleClass('active');
+      table.draw();
+    });
 
-  $('#toggleView').on('change', function() {
-    const isIconView = $(this).is(':checked');
-    updateHeader(isIconView);
-  });
+    $(document).on('change', '.live-checkbox', function() {
+      table.draw();
+    });
 
-  $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-    let activeLives = [];
-    if ($('#toggleView').is(':checked')) {
-      activeLives = $('.live-logo.active').map(function() {
-        return $(this).data('live');
-      }).get();
-    } else {
-      activeLives = $('.live-checkbox:checked').map(function() {
-        return $(this).data('live');
-      }).get();
-    }
+    $('#toggleView').on('change', function() {
+      const isIconView = $(this).is(':checked');
+      updateHeader(isIconView);
+    });
 
-    if (activeLives.length === 0) return true;
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+      let activeLives = [];
+      if ($('#toggleView').is(':checked')) {
+        activeLives = $('.live-logo.active').map(function() {
+          return $(this).data('live');
+        }).get();
+      } else {
+        activeLives = $('.live-checkbox:checked').map(function() {
+          return $(this).data('live');
+        }).get();
+      }
 
-    return activeLives.every(live => {
-      const colIndex = liveColumnIndexMap[live];
-      return data[colIndex] === '✓';
+      if (activeLives.length === 0) return true;
+
+      return activeLives.every(live => {
+        const colIndex = liveColumnIndexMap[live];
+        return data[colIndex] === '✓';
+      });
     });
   });
 });
