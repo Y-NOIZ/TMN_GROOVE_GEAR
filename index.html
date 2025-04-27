@@ -3,22 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>TMN Live Gear</title>
+
+  <!-- DataTablesの基本CSSを読み込み -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  
   <style>
-    body {
-      padding: 20px; /* 画面左右に余白 */
-    }
-    .table-wrapper {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+    /* テーブルヘッダー（thead th）を中央寄せにする */
     table.dataTable thead th {
       text-align: center;
-      white-space: nowrap; /* 長い文字列でも折り返さない */
+      white-space: normal; /* ←ヘッダーで改行を許可 */
     }
-    table.dataTable td {
-      white-space: nowrap;
-    }
+
+    /* 各ライブのアイコン画像用スタイル */
     .live-logo, .live-checkbox-label {
       width: 48px;
       height: 48px;
@@ -26,19 +22,45 @@
       cursor: pointer;
       transition: opacity 0.3s;
     }
+
+    /* ライブアイコンで非アクティブなものは透明度を下げる */
     .live-logo:not(.active) {
       opacity: 0.3;
     }
+
+    /* 通常の左寄せスタイル */
     .dt-left {
       text-align: left;
     }
+
+    /* ヘッダーに余白をもたせる */
     .toggle-container {
       margin-bottom: 10px;
     }
+
+    /* ライブ名チェックボックス表示時、列の最大幅を制限して折り返す */
+    .live-header {
+      max-width: 120px; /* 最大幅指定（適宜調整可） */
+      word-break: break-word; /* 長い単語を折り返す */
+      font-size: 12px; /* 縮小表示オフ時のフォントを小さめに */
+    }
+
+    /* テーブル全体に左右余白を持たせる */
+    #gearTable_wrapper {
+      padding: 0 20px;
+    }
+
+    /* テーブル自体も幅を最小限にフィットさせる */
+    #gearTable {
+      width: auto !important;
+      margin: 0 auto;
+    }
   </style>
 </head>
+
 <body>
 
+<!-- 縮小表示のオン/オフ用トグル -->
 <div class="toggle-container">
   <label>
     <input type="checkbox" id="toggleView" checked>
@@ -46,27 +68,31 @@
   </label>
 </div>
 
-<div class="table-wrapper">
-  <table id="gearTable" class="display" style="width:100%">
-    <thead>
-      <tr id="headerRow">
-        <th>ジャンル</th>
-        <th>メーカー</th>
-        <th>機材名</th>
-        <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
-        <th class="live-header" data-live="TOUR TMN EXPO"></th>
-        <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
-        <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
-        <th>備考</th>
-      </tr>
-    </thead>
-  </table>
-</div>
+<!-- 機材リストのテーブル -->
+<table id="gearTable" class="display">
+  <thead>
+    <tr id="headerRow">
+      <!-- ソート可能な列たち -->
+      <th>ジャンル</th>
+      <th>メーカー</th>
+      <th>機材名</th>
+      <!-- ソートなし（ライブ名＋チェックボックス用） -->
+      <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
+      <th class="live-header" data-live="TOUR TMN EXPO"></th>
+      <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
+      <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
+      <th>備考</th>
+    </tr>
+  </thead>
+</table>
 
+<!-- 必要なライブラリを読み込み -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 <script>
 $(document).ready(function() {
+  // ライブ情報（フルネーム＋アイコンファイル名）
   const liveInfos = [
     { name: "RHYTHM RED TMN TOUR", short: "RRTT.png" },
     { name: "TOUR TMN EXPO", short: "TTE.png" },
@@ -74,6 +100,7 @@ $(document).ready(function() {
     { name: "TMN 4001 DAYS GROOVE", short: "LG.png" }
   ];
 
+  // ライブ名と列インデックスの対応表
   const liveColumnIndexMap = {
     "RHYTHM RED TMN TOUR": 3,
     "TOUR TMN EXPO": 4,
@@ -81,6 +108,7 @@ $(document).ready(function() {
     "TMN 4001 DAYS GROOVE": 6
   };
 
+  // CSVデータを取得してDataTableにセットする関数
   function fetchCSVData(url, callback) {
     $.ajax({
       url: url,
@@ -105,52 +133,63 @@ $(document).ready(function() {
     });
   }
 
+  // ヘッダーを書き換える関数（アイコン表示orチェックボックス表示）
   function updateHeader(viewModeIcon) {
     $('.live-header').each(function(index) {
       const info = liveInfos[index];
       if (viewModeIcon) {
         $(this).html(`<img src="logos/${info.short}" class="live-logo live-filter active" data-live="${info.name}">`);
       } else {
-        $(this).html(`<label><input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" checked> ${info.name}</label>`);
+        $(this).html(`
+          <label class="live-checkbox-label">
+            <input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" checked><br>
+            ${info.name}
+          </label>
+        `);
       }
     });
   }
 
+  // データ取得してテーブル初期化
   fetchCSVData('TMN_GROOVE_GEAR.csv', function(dataSet) {
     const table = $('#gearTable').DataTable({
-      paging: false,
-      info: false,
-      autoWidth: true,
-      data: dataSet,
+      paging: false,  // ページング機能は不要
+      info: false,    // 件数表示も不要
+      data: dataSet,  // 読み込んだCSVデータを設定
       columns: [
         { data: 'ジャンル' },
         { data: 'メーカー' },
         { data: '機材名' },
-        { data: 'RHYTHM', className: 'dt-center', orderable: false },
-        { data: 'EXPO', className: 'dt-center', orderable: false },
-        { data: 'CRAZY', className: 'dt-center', orderable: false },
-        { data: 'GROOVE', className: 'dt-center', orderable: false },
+        { data: 'RHYTHM', orderable: false, className: 'dt-center' },
+        { data: 'EXPO', orderable: false, className: 'dt-center' },
+        { data: 'CRAZY', orderable: false, className: 'dt-center' },
+        { data: 'GROOVE', orderable: false, className: 'dt-center' },
         { data: '備考', className: 'dt-left' }
       ],
-      order: [] // デフォルトソートなし
+      order: [] // 初期ソートなし
     });
 
+    // 最初はアイコンモードでヘッダー表示
     updateHeader(true);
 
+    // アイコンをクリックしてフィルター切り替え
     $(document).on('click', '.live-logo', function() {
       $(this).toggleClass('active');
       table.draw();
     });
 
+    // チェックボックス変更時にフィルター適用
     $(document).on('change', '.live-checkbox', function() {
       table.draw();
     });
 
+    // 縮小表示オン/オフ切り替え時にヘッダー更新
     $('#toggleView').on('change', function() {
       const isIconView = $(this).is(':checked');
       updateHeader(isIconView);
     });
 
+    // フィルター処理を追加（DataTablesの機能を拡張）
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
       let activeLives = [];
       if ($('#toggleView').is(':checked')) {
@@ -163,8 +202,9 @@ $(document).ready(function() {
         }).get();
       }
 
-      if (activeLives.length === 0) return true;
+      if (activeLives.length === 0) return true; // 何も選ばれてなかったら通す
 
+      // 選ばれたライブすべてに✓が入ってる行だけ表示
       return activeLives.every(live => {
         const colIndex = liveColumnIndexMap[live];
         return data[colIndex] === '✓';
