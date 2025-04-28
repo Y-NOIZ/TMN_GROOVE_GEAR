@@ -45,10 +45,17 @@
     }
 
     /* 表をスリムにするためにテーブル幅を最適化 */
-    #gearTable {
-      width: auto;
-      margin: 0 auto; /* テーブルを中央寄せ */
-    }
+      #gearTable {
+        width: 100%;
+        max-width: 1200px; /* 必要に応じて調整してね */
+        table-layout: fixed; /* 列幅を固定する */
+        margin: 0 auto;
+      }
+      
+      #gearTable td, #gearTable th {
+        word-break: break-word; /* 長い単語も折り返す */
+        white-space: normal;    /* 改行を許可する */
+      }
 
     /* テーブル全体に左右パディング */
     body {
@@ -181,7 +188,7 @@ $(document).ready(function() {
         { data: 'EXPO', className: 'dt-center', orderable: false },
         { data: 'CRAZY', className: 'dt-center', orderable: false },
         { data: 'GROOVE', className: 'dt-center', orderable: false },
-        { data: '備考', className: 'dt-center', orderable: false }
+        { data: '備考', className: 'dt-left', orderable: false }
       ],
       order: [] // 初期ソートなし
     });
@@ -226,7 +233,7 @@ $(document).ready(function() {
       }
 
       if (activeLives.length === 0) return true; // 何も選択していなければすべて表示
-
+      
       return activeLives.every(live => {
         const colIndex = liveColumnIndexMap[live];
         return data[colIndex] === '✓';
