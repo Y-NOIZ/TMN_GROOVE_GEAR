@@ -183,7 +183,7 @@ $(document).ready(function() {
       columns: [
         { data: 'ジャンル' },
         { data: 'メーカー' },
-        { data: '機材名' },
+        { data: '機材名', render: $.fn.dataTable.render.html() },
         { data: 'RHYTHM', className: 'dt-center', orderable: false },
         { data: 'EXPO', className: 'dt-center', orderable: false },
         { data: 'CRAZY', className: 'dt-center', orderable: false },
