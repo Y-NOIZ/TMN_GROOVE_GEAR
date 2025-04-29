@@ -12,82 +12,32 @@
   <title>TMN使用機材まとめ - ライブ別リスト</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
-    body { padding:20px; }
-    table.dataTable thead th { text-align:center; }
-
-    .live-logo {
-      width:50px; height:50px;
-      object-fit:contain;
-      cursor:pointer;
-      transition:opacity .3s;
-    }
+    body { padding: 20px; }
+    table.dataTable thead th { text-align: center; }
+    .live-logo { width:48px; height:48px; object-fit:contain; cursor:pointer; transition:opacity .3s; }
     .live-logo:not(.active) { opacity:.3; }
-
-    .live-checkbox-label {
-      display:inline-flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      min-height:3.5em;
-      white-space:normal;
-      word-break:break-word;
-      font-size:.85em;
-      text-align:center;
-      padding:4px 2px;
-    }
-
+    .live-checkbox-label { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; min-height:3.5em; white-space:normal; word-break:break-word; font-size:.85em; text-align:center; padding:4px 2px; }
     .live-checkbox-label input { margin-top:2px; }
+    .dt-left { text-align: left; }
+    #gearTable { width: 100%; table-layout: fixed; margin: 0 auto; }
+    #gearTable.icon-view { max-width: 1000px; }
+    #gearTable.full-view { max-width: 1600px; }
+    #gearTable td, #gearTable th { word-break: break-word; white-space: normal; padding: 4px; }
 
-    .dt-left { text-align:left; }
+    /* ここで列幅を明示指定 */
+    #gearTable th:nth-child(1), #gearTable td:nth-child(1) { width: 7em; }  /* ジャンル */
+    #gearTable th:nth-child(2), #gearTable td:nth-child(2) { width: 8em; }  /* メーカー */
+    #gearTable th:nth-child(3), #gearTable td:nth-child(3) { width: 10em; } /* 機材名 */
 
-    #gearTable {
-      width:100%;
-      table-layout:fixed;
-      margin:0 auto;
-    }
+    /* ライブ列はアイコン表示とフル表示で幅を切り替え */
+    #gearTable.icon-view th.live-header, #gearTable.icon-view td:nth-child(4),
+    #gearTable.icon-view td:nth-child(5), #gearTable.icon-view td:nth-child(6),
+    #gearTable.icon-view td:nth-child(7) { width: 50px; }
+    #gearTable.full-view th.live-header, #gearTable.full-view td:nth-child(4),
+    #gearTable.full-view td:nth-child(5), #gearTable.full-view td:nth-child(6),
+    #gearTable.full-view td:nth-child(7) { width: 150px; }
 
-    #gearTable.icon-view { max-width:800px; }
-    #gearTable.full-view { max-width:1200px; }
-
-    #gearTable th, #gearTable td {
-      word-break:break-word;
-      white-space:normal;
-      padding:8px;
-    }
-
-    /* 各列の幅を指定（単位はpx） */
-    #gearTable th:nth-child(1), #gearTable td:nth-child(1) { width: 100px; }  /* ジャンル：全角カタカナ7文字 */
-    #gearTable th:nth-child(2), #gearTable td:nth-child(2) { width: 130px; }  /* メーカー：英大文字11文字 */
-    #gearTable th:nth-child(3), #gearTable td:nth-child(3) { width: 170px; }  /* 機材名：英小文字15文字 */
-
-    /* 各ライブ列（アイコン時：50px / フル表示時：150px）*/
-    #gearTable.icon-view th:nth-child(4),
-    #gearTable.icon-view td:nth-child(4),
-    #gearTable.icon-view th:nth-child(5),
-    #gearTable.icon-view td:nth-child(5),
-    #gearTable.icon-view th:nth-child(6),
-    #gearTable.icon-view td:nth-child(6),
-    #gearTable.icon-view th:nth-child(7),
-    #gearTable.icon-view td:nth-child(7) {
-      width: 50px;
-    }
-
-    #gearTable.full-view th:nth-child(4),
-    #gearTable.full-view td:nth-child(4),
-    #gearTable.full-view th:nth-child(5),
-    #gearTable.full-view td:nth-child(5),
-    #gearTable.full-view th:nth-child(6),
-    #gearTable.full-view td:nth-child(6),
-    #gearTable.full-view th:nth-child(7),
-    #gearTable.full-view td:nth-child(7) {
-      width: 150px;
-    }
-
-    #gearTable th:nth-child(8), #gearTable td:nth-child(8) {
-      width: 260px; /* 全角カタカナ7 + 英大文字11 + 英小文字15 相当 */
-    }
-
-    .toggle-container { margin-bottom:10px; }
+    #gearTable th:nth-child(8), #gearTable td:nth-child(8) { width: calc(7em + 8em + 10em); } /* 備考 */
   </style>
 </head>
 <body>
@@ -97,9 +47,7 @@
 <table id="gearTable" class="display icon-view">
   <thead>
     <tr id="headerRow">
-      <th>ジャンル</th>
-      <th>メーカー</th>
-      <th>機材名</th>
+      <th>ジャンル</th><th>メーカー</th><th>機材名</th>
       <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
       <th class="live-header" data-live="TOUR TMN EXPO"></th>
       <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
@@ -108,7 +56,6 @@
     </tr>
   </thead>
 </table>
-
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
