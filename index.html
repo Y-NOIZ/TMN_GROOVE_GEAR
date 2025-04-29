@@ -12,36 +12,24 @@
   <title>TMN使用機材まとめ - ライブ別リスト</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
-    body { padding:20px; }
-    table { width:100%; table-layout:fixed; }
+    body { margin:0; padding:20px; box-sizing:border-box; }
+    table { width:100%; }
     table.dataTable thead th { text-align:center; }
-
     .live-logo { width:48px; height:48px; object-fit:contain; cursor:pointer; transition:opacity .3s; }
     .live-logo:not(.active) { opacity:.3; }
-    .live-checkbox-label {
-      display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
-      min-height:3.5em; white-space:normal; word-break:break-word;
-      font-size:.85em; text-align:center; padding:4px 2px;
-    }
+    .live-checkbox-label { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; min-height:3.5em; white-space:normal; word-break:break-word; font-size:.85em; text-align:center; padding:4px 2px; }
     .live-checkbox-label input { margin-top:2px; }
-
     .dt-left { text-align:left; }
-    .dt-center { text-align:center; }
-
-    #gearTable.icon-view .live-header { width:50px; }
-    #gearTable.full-view .live-header { width:150px; }
-
-    #gearTable th:nth-child(1) { width:14em; } /* ジャンル */
-    #gearTable th:nth-child(2) { width:11ch; } /* メーカー */
-    #gearTable th:nth-child(3) { width:10ch; } /* 機材名 */
-    #gearTable th:last-child { width:auto; }   /* 備考 */
-
-    #gearTable td, #gearTable th {
-      word-break:break-word; white-space:normal;
-      padding:4px 8px;
-    }
-
+    #gearTable { width:100%; table-layout:fixed; }
+    #gearTable td, #gearTable th { word-break:break-word; white-space:normal; }
     .toggle-container { margin-bottom:10px; }
+    .col-genre { width:7em; }
+    .col-maker { width:11ch; }
+    .col-gear { width:10ch; }
+    .col-live-icon { width:50px; }
+    .col-live-full { width:150px; }
+    .col-note { min-width:calc(100% - (7em + 11ch + 10ch + 4*50px)); }
+    .full-view .col-note { min-width:calc(100% - (7em + 11ch + 10ch + 4*150px)); }
   </style>
 </head>
 <body>
@@ -51,12 +39,14 @@
 <table id="gearTable" class="display icon-view">
   <thead>
     <tr id="headerRow">
-      <th>ジャンル</th><th>メーカー</th><th>機材名</th>
+      <th class="col-genre">ジャンル</th>
+      <th class="col-maker">メーカー</th>
+      <th class="col-gear">機材名</th>
       <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
       <th class="live-header" data-live="TOUR TMN EXPO"></th>
       <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
       <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
-      <th>備考</th>
+      <th class="col-note">備考</th>
     </tr>
   </thead>
 </table>
@@ -85,10 +75,13 @@ $(function(){
   const updateHeader=(iconView,states)=>{
     $('.live-header').each((i,th)=>{
       const {name,img}=lives[i];
-      $(th).html(iconView
-        ? `<img src="logos/${img}" class="live-logo live-filter ${states[name]?'active':''}" data-live="${name}">`
-        : `<label class="live-checkbox-label">${name}<input type="checkbox" class="live-checkbox live-filter" data-live="${name}" ${states[name]?'checked':''}></label>`
-      );
+      $(th)
+        .toggleClass('col-live-icon',iconView)
+        .toggleClass('col-live-full',!iconView)
+        .html(iconView
+          ? `<img src="logos/${img}" class="live-logo live-filter ${states[name]?'active':''}" data-live="${name}">`
+          : `<label class="live-checkbox-label">${name}<input type="checkbox" class="live-checkbox live-filter" data-live="${name}" ${states[name]?'checked':''}></label>`
+        );
     });
   };
 
