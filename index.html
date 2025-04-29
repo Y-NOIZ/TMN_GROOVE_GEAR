@@ -123,8 +123,8 @@ $(document).ready(function() {
       } else {
         $(this).html(`
           <label class="live-checkbox-label">
-            <input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" ${checkedStates[info.name] ? 'checked' : ''}>
             ${info.name}
+            <input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" ${checkedStates[info.name] ? 'checked' : ''}>
           </label>
         `);
       }
