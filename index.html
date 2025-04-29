@@ -19,17 +19,17 @@
     .live-checkbox-label { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; min-height:3.5em; white-space:normal; word-break:break-word; font-size:.85em; text-align:center; padding:4px 2px; }
     .live-checkbox-label input { margin-top:2px; }
     .dt-left { text-align: left; }
-    #gearTable { width: 100%; table-layout: fixed; margin: 0 auto; }
+
+    #tableWrapper { display: flex; }
+    #gearTable { width: auto; table-layout: fixed; margin: 0; }
     #gearTable.icon-view { max-width: 1000px; }
     #gearTable.full-view { max-width: 1600px; }
     #gearTable td, #gearTable th { word-break: break-word; white-space: normal; padding: 4px; }
 
-    /* ここで列幅を明示指定 */
-    #gearTable th:nth-child(1), #gearTable td:nth-child(1) { width: 8em; }  /* ジャンル */
-    #gearTable th:nth-child(2), #gearTable td:nth-child(2) { width: 8em; }  /* メーカー */
-    #gearTable th:nth-child(3), #gearTable td:nth-child(3) { width: 15ch; } /* 機材名 */
-
-    /* ライブ列はアイコン表示とフル表示で幅を切り替え */
+    /* 列幅指定 */
+    #gearTable th:nth-child(1), #gearTable td:nth-child(1) { width: 8em; }
+    #gearTable th:nth-child(2), #gearTable td:nth-child(2) { width: 8em; }
+    #gearTable th:nth-child(3), #gearTable td:nth-child(3) { width: 15ch; }
     #gearTable.icon-view th.live-header, #gearTable.icon-view td:nth-child(4),
     #gearTable.icon-view td:nth-child(5), #gearTable.icon-view td:nth-child(6),
     #gearTable.icon-view td:nth-child(7) { width: 50px; }
@@ -37,50 +37,54 @@
     #gearTable.full-view td:nth-child(5), #gearTable.full-view td:nth-child(6),
     #gearTable.full-view td:nth-child(7) { width: 150px; }
 
-    #gearTable th:nth-child(8), #gearTable td:nth-child(8) { width: calc(8em + 8em + 15ch); } /* 備考 */
+    /* 備考カラム */
+    .remarks-cell { min-width: 400px; padding-left: 10px; }
   </style>
 </head>
 <body>
 <div class="toggle-container">
   <label><input type="checkbox" id="toggleView" checked>縮小表示オン/オフ</label>
 </div>
-<table id="gearTable" class="display icon-view">
-  <thead>
-    <tr id="headerRow">
-      <th>ジャンル</th><th>メーカー</th><th>機材名</th>
-      <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
-      <th class="live-header" data-live="TOUR TMN EXPO"></th>
-      <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
-      <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
-      <th>備考</th>
-    </tr>
-  </thead>
-</table>
+<div id="tableWrapper">
+  <table id="gearTable" class="display icon-view">
+    <thead>
+      <tr id="headerRow">
+        <th>ジャンル</th><th>メーカー</th><th>機材名</th>
+        <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
+        <th class="live-header" data-live="TOUR TMN EXPO"></th>
+        <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
+        <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
+      </tr>
+    </thead>
+  </table>
+  <div id="remarksColumn"></div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
 $(function(){
-  const lives=[
-    {name:"RHYTHM RED TMN TOUR",img:"RRTT.png"},
-    {name:"TOUR TMN EXPO",img:"TTE.png"},
-    {name:"TOUR TMN EXPO FINAL CRAZY 4 YOU",img:"C4U.png"},
-    {name:"TMN 4001 DAYS GROOVE",img:"LG.png"}
+  const lives = [
+    {name:"RHYTHM RED TMN TOUR", img:"RRTT.png"},
+    {name:"TOUR TMN EXPO", img:"TTE.png"},
+    {name:"TOUR TMN EXPO FINAL CRAZY 4 YOU", img:"C4U.png"},
+    {name:"TMN 4001 DAYS GROOVE", img:"LG.png"}
   ];
-  const colIdx={"RHYTHM RED TMN TOUR":3,"TOUR TMN EXPO":4,"TOUR TMN EXPO FINAL CRAZY 4 YOU":5,"TMN 4001 DAYS GROOVE":6};
+  const colIdx = {"RHYTHM RED TMN TOUR":3,"TOUR TMN EXPO":4,"TOUR TMN EXPO FINAL CRAZY 4 YOU":5,"TMN 4001 DAYS GROOVE":6};
 
-  const fetchCSV=url=>$.get(url).then(text=>{
-    return text.trim().split('\n').slice(1).map(line=>{
-      const cols=line.split(',');
+  const fetchCSV = url => $.get(url).then(text => {
+    return text.trim().split('\n').slice(1).map(line => {
+      const cols = line.split(',');
       return {
-        ジャンル:cols[0],メーカー:cols[1],機材名:cols[2],
-        RHYTHM:cols[3],EXPO:cols[4],CRAZY:cols[5],GROOVE:cols[6],備考:cols[7]
+        ジャンル: cols[0], メーカー: cols[1], 機材名: cols[2],
+        RHYTHM: cols[3], EXPO: cols[4], CRAZY: cols[5], GROOVE: cols[6], 備考: cols[7]
       };
     });
   });
 
-  const updateHeader=(iconView,states)=>{
-    $('.live-header').each((i,th)=>{
-      const {name,img}=lives[i];
+  const updateHeader = (iconView, states) => {
+    $('.live-header').each((i,th) => {
+      const {name,img} = lives[i];
       $(th).html(iconView
         ? `<img src="logos/${img}" class="live-logo live-filter ${states[name]?'active':''}" data-live="${name}">`
         : `<label class="live-checkbox-label">${name}<input type="checkbox" class="live-checkbox live-filter" data-live="${name}" ${states[name]?'checked':''}></label>`
@@ -88,48 +92,54 @@ $(function(){
     });
   };
 
-  const getStates=()=>{
-    const states={};
+  const getStates = () => {
+    const states = {};
     $('.live-filter').each(function(){
-      const live=$(this).data('live');
-      states[live]=$(this).is('.live-logo')?$(this).hasClass('active'):$(this).prop('checked');
+      const live = $(this).data('live');
+      states[live] = $(this).is('.live-logo') ? $(this).hasClass('active') : $(this).prop('checked');
     });
     return states;
   };
 
-  fetchCSV('TMN_GROOVE_GEAR.csv').then(data=>{
-    const table=$('#gearTable').DataTable({
-      paging:false, info:false, autoWidth:false,
-      data, order:[],
-      columns:[
-        {data:'ジャンル'},{data:'メーカー'},{data:'機材名'},
+  fetchCSV('TMN_GROOVE_GEAR.csv').then(data => {
+    const remarksColumn = $('#remarksColumn');
+    remarksColumn.empty();
+
+    const table = $('#gearTable').DataTable({
+      paging: false, info: false, autoWidth: false,
+      data, order: [],
+      columns: [
+        {data:'ジャンル'}, {data:'メーカー'}, {data:'機材名'},
         {data:'RHYTHM',className:'dt-center',orderable:false},
         {data:'EXPO',className:'dt-center',orderable:false},
         {data:'CRAZY',className:'dt-center',orderable:false},
-        {data:'GROOVE',className:'dt-center',orderable:false},
-        {data:'備考',className:'dt-left',orderable:false}
-      ]
+        {data:'GROOVE',className:'dt-center',orderable:false}
+      ],
+      createdRow: function(row, rowData){
+        const remarks = $('<div>').addClass('remarks-cell').text(rowData['備考']);
+        remarksColumn.append(remarks);
+      }
     });
 
-    const initStates=Object.fromEntries(lives.map(l=>[l.name,false]));
-    updateHeader(true,initStates);
+    const initStates = Object.fromEntries(lives.map(l => [l.name, false]));
+    updateHeader(true, initStates);
 
     $(document).on('click','.live-logo',function(){$(this).toggleClass('active');table.draw();});
     $(document).on('change','.live-checkbox',function(){table.draw();});
 
     $('#toggleView').on('change',function(){
-      const iconView=$(this).prop('checked');
-      const states=getStates();
-      updateHeader(iconView,states);
+      const iconView = $(this).prop('checked');
+      const states = getStates();
+      updateHeader(iconView, states);
       $('#gearTable').toggleClass('icon-view',iconView).toggleClass('full-view',!iconView);
       table.draw();
     }).trigger('change');
 
-    $.fn.dataTable.ext.search.push((settings,data)=>{
-      const active=$('#toggleView').prop('checked')
+    $.fn.dataTable.ext.search.push((settings, data) => {
+      const active = $('#toggleView').prop('checked')
         ? $('.live-logo.active').map((_,e)=>$(e).data('live')).get()
         : $('.live-checkbox:checked').map((_,e)=>$(e).data('live')).get();
-      return active.length?active.every(l=>data[colIdx[l]]==='✓'):true;
+      return active.length ? active.every(l => data[colIdx[l]]==='✓') : true;
     });
   });
 });
