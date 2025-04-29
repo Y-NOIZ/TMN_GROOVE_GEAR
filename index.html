@@ -12,39 +12,99 @@
   <title>TMN使用機材まとめ - ライブ別リスト</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
-    body { margin:0; padding:0; }
+    body { padding:20px; }
     table.dataTable thead th { text-align:center; }
-    .live-logo { width:48px; height:48px; object-fit:contain; cursor:pointer; transition:opacity .3s; }
+
+    .live-logo {
+      width:50px; height:50px;
+      object-fit:contain;
+      cursor:pointer;
+      transition:opacity .3s;
+    }
     .live-logo:not(.active) { opacity:.3; }
-    .live-checkbox-label { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; min-height:3.5em; white-space:normal; word-break:break-word; font-size:.85em; text-align:center; padding:4px 2px; }
+
+    .live-checkbox-label {
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      min-height:3.5em;
+      white-space:normal;
+      word-break:break-word;
+      font-size:.85em;
+      text-align:center;
+      padding:4px 2px;
+    }
+
     .live-checkbox-label input { margin-top:2px; }
+
     .dt-left { text-align:left; }
-    #gearTable { width:100%; table-layout:fixed; border-collapse:collapse; }
-    #gearTable th, #gearTable td { word-break:break-word; white-space:normal; overflow:hidden; text-overflow:ellipsis; }
-    .genre-col { width:7em; } /* 全角7文字ぶん */
-    .maker-col { width:8em; } /* 大文字11文字ぶん */
-    .gearname-col { width:10em; } /* 小文字15文字ぶん */
-    .live-col-icon { width:50px; }
-    .live-col-full { width:150px; }
-    .remarks-col { min-width:12em; }
-    .toggle-container { margin:10px; }
+
+    #gearTable {
+      width:100%;
+      table-layout:fixed;
+      margin:0 auto;
+    }
+
+    #gearTable.icon-view { max-width:800px; }
+    #gearTable.full-view { max-width:1200px; }
+
+    #gearTable th, #gearTable td {
+      word-break:break-word;
+      white-space:normal;
+      padding:8px;
+    }
+
+    /* 各列の幅を指定（単位はpx） */
+    #gearTable th:nth-child(1), #gearTable td:nth-child(1) { width: 100px; }  /* ジャンル：全角カタカナ7文字 */
+    #gearTable th:nth-child(2), #gearTable td:nth-child(2) { width: 130px; }  /* メーカー：英大文字11文字 */
+    #gearTable th:nth-child(3), #gearTable td:nth-child(3) { width: 170px; }  /* 機材名：英小文字15文字 */
+
+    /* 各ライブ列（アイコン時：50px / フル表示時：150px）*/
+    #gearTable.icon-view th:nth-child(4),
+    #gearTable.icon-view td:nth-child(4),
+    #gearTable.icon-view th:nth-child(5),
+    #gearTable.icon-view td:nth-child(5),
+    #gearTable.icon-view th:nth-child(6),
+    #gearTable.icon-view td:nth-child(6),
+    #gearTable.icon-view th:nth-child(7),
+    #gearTable.icon-view td:nth-child(7) {
+      width: 50px;
+    }
+
+    #gearTable.full-view th:nth-child(4),
+    #gearTable.full-view td:nth-child(4),
+    #gearTable.full-view th:nth-child(5),
+    #gearTable.full-view td:nth-child(5),
+    #gearTable.full-view th:nth-child(6),
+    #gearTable.full-view td:nth-child(6),
+    #gearTable.full-view th:nth-child(7),
+    #gearTable.full-view td:nth-child(7) {
+      width: 150px;
+    }
+
+    #gearTable th:nth-child(8), #gearTable td:nth-child(8) {
+      width: 260px; /* 全角カタカナ7 + 英大文字11 + 英小文字15 相当 */
+    }
+
+    .toggle-container { margin-bottom:10px; }
   </style>
 </head>
 <body>
 <div class="toggle-container">
   <label><input type="checkbox" id="toggleView" checked>縮小表示オン/オフ</label>
 </div>
-<table id="gearTable" class="display">
+<table id="gearTable" class="display icon-view">
   <thead>
     <tr id="headerRow">
-      <th class="genre-col">ジャンル</th>
-      <th class="maker-col">メーカー</th>
-      <th class="gearname-col">機材名</th>
-      <th class="live-header live-col-icon" data-live="RHYTHM RED TMN TOUR"></th>
-      <th class="live-header live-col-icon" data-live="TOUR TMN EXPO"></th>
-      <th class="live-header live-col-icon" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
-      <th class="live-header live-col-icon" data-live="TMN 4001 DAYS GROOVE"></th>
-      <th class="remarks-col">備考</th>
+      <th>ジャンル</th>
+      <th>メーカー</th>
+      <th>機材名</th>
+      <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
+      <th class="live-header" data-live="TOUR TMN EXPO"></th>
+      <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
+      <th class="live-header" data-live="TMN 4001 DAYS GROOVE"></th>
+      <th>備考</th>
     </tr>
   </thead>
 </table>
@@ -78,7 +138,6 @@ $(function(){
         ? `<img src="logos/${img}" class="live-logo live-filter ${states[name]?'active':''}" data-live="${name}">`
         : `<label class="live-checkbox-label">${name}<input type="checkbox" class="live-checkbox live-filter" data-live="${name}" ${states[name]?'checked':''}></label>`
       );
-      $(th).toggleClass('live-col-icon',iconView).toggleClass('live-col-full',!iconView);
     });
   };
 
@@ -93,12 +152,10 @@ $(function(){
 
   fetchCSV('TMN_GROOVE_GEAR.csv').then(data=>{
     const table=$('#gearTable').DataTable({
-      paging:false, info:false, autoWidth:false, searching:false,
+      paging:false, info:false, autoWidth:false,
       data, order:[],
       columns:[
-        {data:'ジャンル'},
-        {data:'メーカー'},
-        {data:'機材名'},
+        {data:'ジャンル'},{data:'メーカー'},{data:'機材名'},
         {data:'RHYTHM',className:'dt-center',orderable:false},
         {data:'EXPO',className:'dt-center',orderable:false},
         {data:'CRAZY',className:'dt-center',orderable:false},
@@ -117,6 +174,7 @@ $(function(){
       const iconView=$(this).prop('checked');
       const states=getStates();
       updateHeader(iconView,states);
+      $('#gearTable').toggleClass('icon-view',iconView).toggleClass('full-view',!iconView);
       table.draw();
     }).trigger('change');
 
