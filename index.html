@@ -12,73 +12,28 @@
   <title>TMN使用機材まとめ - ライブ別リスト</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
-    table.dataTable thead th {
-      text-align: center;
-    }
-    .live-logo {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
-    .live-logo:not(.active) {
-      opacity: 0.3;
-    }
-    .live-checkbox-label {
-      display: inline-flex;
-      flex-direction: column; /* ← 縦に並べるようにする */
-      align-items: center;
-      justify-content: center;
-      min-height: 3.5em; /* ← 表と重ならないよう最小高さを確保 */
-      white-space: normal;
-      word-break: break-word;
-      font-size: 0.85em;
-      text-align: center;
-      padding: 4px 2px;
-    }
-    .live-checkbox-label input {
-      margin-top: 2px;
-    }
-    .dt-left {
-      text-align: left;
-    }
-    body {
-      padding: 20px;
-    }
-    .toggle-container {
-      margin-bottom: 10px;
-    }
-    #gearTable {
-      width: 100%;
-      table-layout: fixed;
-      margin: 0 auto;
-    }
-    #gearTable.icon-view {
-      max-width: 800px;
-    }
-    #gearTable.full-view {
-      max-width: 1200px;
-    }
-    #gearTable td, #gearTable th {
-      word-break: break-word;
-      white-space: normal;
-    }
+    body { padding:20px; }
+    table.dataTable thead th { text-align:center; }
+    .live-logo { width:48px; height:48px; object-fit:contain; cursor:pointer; transition:opacity .3s; }
+    .live-logo:not(.active) { opacity:.3; }
+    .live-checkbox-label { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; min-height:3.5em; white-space:normal; word-break:break-word; font-size:.85em; text-align:center; padding:4px 2px; }
+    .live-checkbox-label input { margin-top:2px; }
+    .dt-left { text-align:left; }
+    #gearTable { width:100%; table-layout:fixed; margin:0 auto; }
+    #gearTable.icon-view { max-width:800px; }
+    #gearTable.full-view { max-width:1200px; }
+    #gearTable td, #gearTable th { word-break:break-word; white-space:normal; }
+    .toggle-container { margin-bottom:10px; }
   </style>
 </head>
 <body>
 <div class="toggle-container">
-  <label>
-    <input type="checkbox" id="toggleView" checked>
-    縮小表示オン/オフ
-  </label>
+  <label><input type="checkbox" id="toggleView" checked>縮小表示オン/オフ</label>
 </div>
 <table id="gearTable" class="display icon-view">
   <thead>
     <tr id="headerRow">
-      <th>ジャンル</th>
-      <th>メーカー</th>
-      <th>機材名</th>
+      <th>ジャンル</th><th>メーカー</th><th>機材名</th>
       <th class="live-header" data-live="RHYTHM RED TMN TOUR"></th>
       <th class="live-header" data-live="TOUR TMN EXPO"></th>
       <th class="live-header" data-live="TOUR TMN EXPO FINAL CRAZY 4 YOU"></th>
@@ -90,136 +45,77 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
-$(document).ready(function() {
-  const liveInfos = [
-    { name: "RHYTHM RED TMN TOUR", short: "RRTT.png" },
-    { name: "TOUR TMN EXPO", short: "TTE.png" },
-    { name: "TOUR TMN EXPO FINAL CRAZY 4 YOU", short: "C4U.png" },
-    { name: "TMN 4001 DAYS GROOVE", short: "LG.png" }
+$(function(){
+  const lives=[
+    {name:"RHYTHM RED TMN TOUR",img:"RRTT.png"},
+    {name:"TOUR TMN EXPO",img:"TTE.png"},
+    {name:"TOUR TMN EXPO FINAL CRAZY 4 YOU",img:"C4U.png"},
+    {name:"TMN 4001 DAYS GROOVE",img:"LG.png"}
   ];
-  const liveColumnIndexMap = {
-    "RHYTHM RED TMN TOUR": 3,
-    "TOUR TMN EXPO": 4,
-    "TOUR TMN EXPO FINAL CRAZY 4 YOU": 5,
-    "TMN 4001 DAYS GROOVE": 6
+  const colIdx={"RHYTHM RED TMN TOUR":3,"TOUR TMN EXPO":4,"TOUR TMN EXPO FINAL CRAZY 4 YOU":5,"TMN 4001 DAYS GROOVE":6};
+
+  const fetchCSV=url=>$.get(url).then(text=>{
+    return text.trim().split('\n').slice(1).map(line=>{
+      const cols=line.split(',');
+      return {
+        ジャンル:cols[0],メーカー:cols[1],機材名:cols[2],
+        RHYTHM:cols[3],EXPO:cols[4],CRAZY:cols[5],GROOVE:cols[6],備考:cols[7]
+      };
+    });
+  });
+
+  const updateHeader=(iconView,states)=>{
+    $('.live-header').each((i,th)=>{
+      const {name,img}=lives[i];
+      $(th).html(iconView
+        ? `<img src="logos/${img}" class="live-logo live-filter ${states[name]?'active':''}" data-live="${name}">`
+        : `<label class="live-checkbox-label">${name}<input type="checkbox" class="live-checkbox live-filter" data-live="${name}" ${states[name]?'checked':''}></label>`
+      );
+    });
   };
 
-  function fetchCSVData(url, callback) {
-    $.ajax({
-      url: url,
-      dataType: 'text'
-    }).done(function(csv) {
-      const lines = csv.split('\n').filter(line => line.trim() !== '');
-      const data = lines.slice(1).map(line => {
-        const cols = line.split(',');
-        return {
-          ジャンル: cols[0],
-          メーカー: cols[1],
-          機材名: cols[2],
-          RHYTHM: cols[3],
-          EXPO: cols[4],
-          CRAZY: cols[5],
-          GROOVE: cols[6],
-          備考: cols[7]
-        };
-      });
-      callback(data);
-    });
-  }
-
-  function updateHeader(viewModeIcon, checkedStates) {
-    $('.live-header').each(function(index) {
-      const info = liveInfos[index];
-      if (viewModeIcon) {
-        $(this).html(`<img src="logos/${info.short}" class="live-logo live-filter ${checkedStates[info.name] ? 'active' : ''}" data-live="${info.name}">`);
-      } else {
-        $(this).html(
-          `<label class="live-checkbox-label">
-            ${info.name}
-            <input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" ${checkedStates[info.name] ? 'checked' : ''}>
-          </label>`
-        );
-      }
-    });
-  }
-
-  function getCheckedStates() {
-    const states = {};
-    $('.live-filter').each(function() {
-      const live = $(this).data('live');
-      if ($(this).is('.live-logo')) {
-        states[live] = $(this).hasClass('active');
-      } else if ($(this).is('.live-checkbox')) {
-        states[live] = $(this).prop('checked');
-      }
+  const getStates=()=>{
+    const states={};
+    $('.live-filter').each(function(){
+      const live=$(this).data('live');
+      states[live]=$(this).is('.live-logo')?$(this).hasClass('active'):$(this).prop('checked');
     });
     return states;
-  }
+  };
 
-  fetchCSVData('TMN_GROOVE_GEAR.csv', function(dataSet) {
-    const table = $('#gearTable').DataTable({
-      paging: false,
-      info: false,
-      autoWidth: false,
-      data: dataSet,
-      columns: [
-        { data: 'ジャンル' },
-        { data: 'メーカー' },
-        { data: '機材名' },
-        { data: 'RHYTHM', className: 'dt-center', orderable: false },
-        { data: 'EXPO', className: 'dt-center', orderable: false },
-        { data: 'CRAZY', className: 'dt-center', orderable: false },
-        { data: 'GROOVE', className: 'dt-center', orderable: false },
-        { data: '備考', className: 'dt-left', orderable: false }
-      ],
-      order: []
+  fetchCSV('TMN_GROOVE_GEAR.csv').then(data=>{
+    const table=$('#gearTable').DataTable({
+      paging:false, info:false, autoWidth:false,
+      data, order:[],
+      columns:[
+        {data:'ジャンル'},{data:'メーカー'},{data:'機材名'},
+        {data:'RHYTHM',className:'dt-center',orderable:false},
+        {data:'EXPO',className:'dt-center',orderable:false},
+        {data:'CRAZY',className:'dt-center',orderable:false},
+        {data:'GROOVE',className:'dt-center',orderable:false},
+        {data:'備考',className:'dt-left',orderable:false}
+      ]
     });
 
-    // 初期状態
-    const initialStates = {};
-    liveInfos.forEach(info => {
-      initialStates[info.name] = false;
-    });
-    updateHeader(true, initialStates);
+    const initStates=Object.fromEntries(lives.map(l=>[l.name,false]));
+    updateHeader(true,initStates);
 
-    // クリックイベント
-    $(document).on('click', '.live-logo', function() {
-      $(this).toggleClass('active');
+    $(document).on('click','.live-logo',function(){$(this).toggleClass('active');table.draw();});
+    $(document).on('change','.live-checkbox',function(){table.draw();});
+
+    $('#toggleView').on('change',function(){
+      const iconView=$(this).prop('checked');
+      const states=getStates();
+      updateHeader(iconView,states);
+      $('#gearTable').toggleClass('icon-view',iconView).toggleClass('full-view',!iconView);
       table.draw();
-    });
-    $(document).on('change', '.live-checkbox', function() {
-      table.draw();
-    });
+    }).trigger('change');
 
-    // 縮小表示オンオフ
-    $('#toggleView').on('change', function() {
-      const isIconView = $(this).is(':checked');
-      const currentStates = getCheckedStates();
-      updateHeader(isIconView, currentStates);
-      $('#gearTable').removeClass('icon-view full-view').addClass(isIconView ? 'icon-view' : 'full-view');
-      table.draw();
-    });
-
-    // 初期化処理
-    $('#toggleView').prop('checked', true).trigger('change');
-
-    // フィルタ
-    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-      let activeLives = [];
-      if ($('#toggleView').is(':checked')) {
-        activeLives = $('.live-logo.active').map(function() {
-          return $(this).data('live');
-        }).get();
-      } else {
-        activeLives = $('.live-checkbox:checked').map(function() {
-          return $(this).data('live');
-        }).get();
-      }
-      if (activeLives.length === 0) return true;
-      return activeLives.every(live => {
-        const colIndex = liveColumnIndexMap[live];
-        return data[colIndex] === '✓';
-      });
+    $.fn.dataTable.ext.search.push((settings,data)=>{
+      const active=$('#toggleView').prop('checked')
+        ? $('.live-logo.active').map((_,e)=>$(e).data('live')).get()
+        : $('.live-checkbox:checked').map((_,e)=>$(e).data('live')).get();
+      return active.length?active.every(l=>data[colIdx[l]]==='✓'):true;
     });
   });
 });
