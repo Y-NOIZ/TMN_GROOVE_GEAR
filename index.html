@@ -82,8 +82,8 @@ $(function(){
     $('.live-header').each((i,th)=>{
       const {name,img}=lives[i];
       $(th).html(iconView
-        ? <img src="logos/${img}" class="live-logo live-filter ${states[name]?'active':''}" data-live="${name}">
-        : <label class="live-checkbox-label">${name}<input type="checkbox" class="live-checkbox live-filter" data-live="${name}" ${states[name]?'checked':''}></label>
+        ? `<img src="logos/${img}" class="live-logo live-filter ${states[name]?'active':''}" data-live="${name}">`
+        : `<label class="live-checkbox-label">${name}<input type="checkbox" class="live-checkbox live-filter" data-live="${name}" ${states[name]?'checked':''}></label>`
       );
     });
   };
