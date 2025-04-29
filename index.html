@@ -27,7 +27,7 @@
     /* ここで列幅を明示指定 */
     #gearTable th:nth-child(1), #gearTable td:nth-child(1) { width: 8em; }  /* ジャンル */
     #gearTable th:nth-child(2), #gearTable td:nth-child(2) { width: 8em; }  /* メーカー */
-    #gearTable th:nth-child(3), #gearTable td:nth-child(3) { width: 10em; } /* 機材名 */
+    #gearTable th:nth-child(3), #gearTable td:nth-child(3) { width: 15ch; } /* 機材名 */
 
     /* ライブ列はアイコン表示とフル表示で幅を切り替え */
     #gearTable.icon-view th.live-header, #gearTable.icon-view td:nth-child(4),
@@ -37,7 +37,7 @@
     #gearTable.full-view td:nth-child(5), #gearTable.full-view td:nth-child(6),
     #gearTable.full-view td:nth-child(7) { width: 150px; }
 
-    #gearTable th:nth-child(8), #gearTable td:nth-child(8) { width: 26em); } /* 備考 */
+    #gearTable th:nth-child(8), #gearTable td:nth-child(8) { width: calc(8em + 8em + 15ch); } /* 備考 */
   </style>
 </head>
 <body>
