@@ -13,16 +13,34 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
   <style>
     body { padding:20px; }
+    table { width:100%; table-layout:fixed; }
     table.dataTable thead th { text-align:center; }
+
     .live-logo { width:48px; height:48px; object-fit:contain; cursor:pointer; transition:opacity .3s; }
     .live-logo:not(.active) { opacity:.3; }
-    .live-checkbox-label { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; min-height:3.5em; white-space:normal; word-break:break-word; font-size:.85em; text-align:center; padding:4px 2px; }
+    .live-checkbox-label {
+      display:inline-flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:3.5em; white-space:normal; word-break:break-word;
+      font-size:.85em; text-align:center; padding:4px 2px;
+    }
     .live-checkbox-label input { margin-top:2px; }
+
     .dt-left { text-align:left; }
-    #gearTable { width:100%; table-layout:fixed; margin:0 auto; }
-    #gearTable.icon-view { max-width:800px; }
-    #gearTable.full-view { max-width:1200px; }
-    #gearTable td, #gearTable th { word-break:break-word; white-space:normal; }
+    .dt-center { text-align:center; }
+
+    #gearTable.icon-view .live-header { width:50px; }
+    #gearTable.full-view .live-header { width:150px; }
+
+    #gearTable th:nth-child(1) { width:14em; } /* ジャンル */
+    #gearTable th:nth-child(2) { width:11ch; } /* メーカー */
+    #gearTable th:nth-child(3) { width:10ch; } /* 機材名 */
+    #gearTable th:last-child { width:auto; }   /* 備考 */
+
+    #gearTable td, #gearTable th {
+      word-break:break-word; white-space:normal;
+      padding:4px 8px;
+    }
+
     .toggle-container { margin-bottom:10px; }
   </style>
 </head>
