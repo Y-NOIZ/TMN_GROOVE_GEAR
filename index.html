@@ -27,16 +27,17 @@
     }
     .live-checkbox-label {
       display: inline-flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 3em;
       text-align: center;
-      white-space: nowrap;
+      white-space: normal;
       word-break: break-word;
       font-size: 0.85em;
     }
     .live-checkbox-label input {
-      margin-right: 4px;
+      margin-top: 2px;
     }
     .dt-left {
       text-align: left;
@@ -131,12 +132,12 @@ $(document).ready(function() {
       if (viewModeIcon) {
         $(this).html(`<img src="logos/${info.short}" class="live-logo live-filter ${checkedStates[info.name] ? 'active' : ''}" data-live="${info.name}">`);
       } else {
-        $(this).html(`
-          <label class="live-checkbox-label">
+        $(this).html(
+          `<label class="live-checkbox-label">
             ${info.name}
             <input type="checkbox" class="live-checkbox live-filter" data-live="${info.name}" ${checkedStates[info.name] ? 'checked' : ''}>
-          </label>
-        `);
+          </label>`
+        );
       }
     });
   }
@@ -173,29 +174,35 @@ $(document).ready(function() {
       order: []
     });
 
+    // 初期状態
     const initialStates = {};
     liveInfos.forEach(info => {
       initialStates[info.name] = false;
     });
-
     updateHeader(true, initialStates);
 
+    // クリックイベント
     $(document).on('click', '.live-logo', function() {
       $(this).toggleClass('active');
       table.draw();
     });
-
     $(document).on('change', '.live-checkbox', function() {
       table.draw();
     });
 
+    // 縮小表示オンオフ
     $('#toggleView').on('change', function() {
       const isIconView = $(this).is(':checked');
-      updateHeader(isIconView, initialStates); // ← ここ修正
+      const currentStates = getCheckedStates();
+      updateHeader(isIconView, currentStates);
       $('#gearTable').removeClass('icon-view full-view').addClass(isIconView ? 'icon-view' : 'full-view');
       table.draw();
     });
 
+    // 初期化処理
+    $('#toggleView').prop('checked', true).trigger('change');
+
+    // フィルタ
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
       let activeLives = [];
       if ($('#toggleView').is(':checked')) {
