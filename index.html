@@ -27,14 +27,15 @@
     }
     .live-checkbox-label {
       display: inline-flex;
-      flex-direction: column;
+      flex-direction: column; /* ← 縦に並べるようにする */
       align-items: center;
       justify-content: center;
-      height: 3em;
-      text-align: center;
+      min-height: 3.5em; /* ← 表と重ならないよう最小高さを確保 */
       white-space: normal;
       word-break: break-word;
       font-size: 0.85em;
+      text-align: center;
+      padding: 4px 2px;
     }
     .live-checkbox-label input {
       margin-top: 2px;
