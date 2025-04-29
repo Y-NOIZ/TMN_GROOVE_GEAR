@@ -31,6 +31,7 @@
       justify-content: center;
       height: 3em;
       text-align: center;
+      white-space: nowrap;
       word-break: break-word;
       font-size: 0.85em;
     }
@@ -100,6 +101,7 @@ $(document).ready(function() {
     "TOUR TMN EXPO FINAL CRAZY 4 YOU": 5,
     "TMN 4001 DAYS GROOVE": 6
   };
+
   function fetchCSVData(url, callback) {
     $.ajax({
       url: url,
@@ -122,6 +124,7 @@ $(document).ready(function() {
       callback(data);
     });
   }
+
   function updateHeader(viewModeIcon, checkedStates) {
     $('.live-header').each(function(index) {
       const info = liveInfos[index];
@@ -137,6 +140,7 @@ $(document).ready(function() {
       }
     });
   }
+
   function getCheckedStates() {
     const states = {};
     $('.live-filter').each(function() {
@@ -149,6 +153,7 @@ $(document).ready(function() {
     });
     return states;
   }
+
   fetchCSVData('TMN_GROOVE_GEAR.csv', function(dataSet) {
     const table = $('#gearTable').DataTable({
       paging: false,
@@ -167,25 +172,30 @@ $(document).ready(function() {
       ],
       order: []
     });
+
     const initialStates = {};
     liveInfos.forEach(info => {
       initialStates[info.name] = false;
     });
+
     updateHeader(true, initialStates);
+
     $(document).on('click', '.live-logo', function() {
       $(this).toggleClass('active');
       table.draw();
     });
+
     $(document).on('change', '.live-checkbox', function() {
       table.draw();
     });
+
     $('#toggleView').on('change', function() {
       const isIconView = $(this).is(':checked');
-      const currentStates = getCheckedStates();
-      updateHeader(isIconView, currentStates);
+      updateHeader(isIconView, initialStates); // ← ここ修正
       $('#gearTable').removeClass('icon-view full-view').addClass(isIconView ? 'icon-view' : 'full-view');
       table.draw();
     });
+
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
       let activeLives = [];
       if ($('#toggleView').is(':checked')) {
